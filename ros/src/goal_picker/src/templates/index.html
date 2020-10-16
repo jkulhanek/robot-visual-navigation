@@ -1,0 +1,12 @@
+<!doctype html>
+<html>
+    <body>
+        {% if message %}
+            <div class="message">{{ message }}</div>
+        {% endif %}
+        <form action="/" method="POST" enctype = "multipart/form-data">
+            <input type="file" name="goal_image" accept="image/*">
+            <input type="submit">
+        </form>
+    </body>
+</html>

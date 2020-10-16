@@ -1,0 +1,6 @@
+[submodule "deep-rl-pytorch"]
+	path = deep-rl-pytorch
+	url = https://github.com/jkulhanek/deep-rl-pytorch.git
+[submodule "dmlab-vn"]
+	path = dmlab-vn
+	url = https://github.com/jkulhanek/dmlab-vn.git
