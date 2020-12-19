@@ -7,7 +7,6 @@ import argparse
 import deep_rl
 from deep_rl import make_trainer
 from deep_rl.common.metrics import MetricHandlerBase
-import torch.multiprocessing as mp
 import deep_rl.configuration as config
 from configuration import configuration
 
@@ -25,9 +24,6 @@ class WandbMetricHandler(MetricHandlerBase):
 
 
 if __name__ == '__main__':
-    # Set mp method to spawn
-    # Fork does not play well with pytorch
-    mp.set_start_method('spawn')
     parser = argparse.ArgumentParser("train")
     parser.add_argument("trainer")
     args = parser.parse_args()

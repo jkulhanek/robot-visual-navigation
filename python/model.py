@@ -2,7 +2,7 @@ import torch
 from torch import nn
 import math
 from deep_rl.model import TimeDistributed, MaskedRNN, Flatten
-from deep_rl.a2c_unreal.model import UnrealModel
+from deep_rl.actor_critic.model import UnrealModel
 
 
 class Unflatten(nn.Module):

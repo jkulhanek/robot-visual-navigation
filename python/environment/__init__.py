@@ -3,8 +3,8 @@ import gym.spaces
 from gym.wrappers import TimeLimit
 import random
 import numpy as np
-from deep_rl.common.env import ScaledFloatFrame, SubprocVecEnv, DummyVecEnv
-from .dmlab_environment import MAP
+from deep_rl.common.env import ScaledFloatFrame
+from gym.vector import AsyncVectorEnv, SyncVectorEnv
 
 
 def _createImageEnvironment(**kwargs):
@@ -12,9 +12,10 @@ def _createImageEnvironment(**kwargs):
     return ImageEnvironmentWrapper(TimeLimit(ImageEnvironment(**kwargs), 300))
 
 
-def _createDmlabEnvironment(**kwargs):
-    from .dmlab_environment import DeepmindLabEnv
-    return ScaledFloatFrame(DeepmindLabEnv(**kwargs))
+def _createDmhouseEnvironment(**kwargs):
+    import dmhouse
+    env = gym.make('DMHouse-v1', **kwargs, renderer='software')
+    return ScaledFloatFrame(env)
 
 
 class SingleImageWrapper(gym.ObservationWrapper):
@@ -44,18 +45,15 @@ def create_multiscene(num_processes, wrap=lambda e: e, seed=None, use_dummy=Fals
         funcs.append(func)
 
     if use_dummy:
-        return DummyVecEnv(funcs)
+        return SyncVectorEnv(funcs)
 
     else:
-        return SubprocVecEnv(funcs)
+        return AsyncVectorEnv(funcs)
 
 
 gym.register("TurtleLab-v0", entry_point=_createImageEnvironment, kwargs=dict(dataset_name='turtle_room'))
-
-for key, l in MAP.items():
-    gym.register(
-        id='DeepmindLab%s-v0' % key,
-        entry_point=_createDmlabEnvironment,
-        kwargs=dict(scene=l)
-    )
-
+gym.register(
+    id='DMHouseCustom-v1',
+    entry_point=_createDmhouseEnvironment,
+    kwargs=dict()
+)

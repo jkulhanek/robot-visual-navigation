@@ -3,15 +3,16 @@ import torch
 import os
 
 from deep_rl.common.env import RewardCollector, TransposeImage
-from deep_rl.a2c_unreal.util import UnrealEnvBaseWrapper
-from deep_rl.a2c_unreal.unreal import without_last_item, UnrealAgent, UnrealTrainer
-from deep_rl.a2c_unreal.util import autocrop_observations
-from deep_rl.common.pytorch import to_tensor, KeepTensor, detach_all, pytorch_call
-from deep_rl.a2c.a2c import expand_time_dimension
+from deep_rl.actor_critic.environment import UnrealEnvBaseWrapper
+from deep_rl.actor_critic import UnrealAgent, Unreal as UnrealTrainer
+from deep_rl.actor_critic.unreal.unreal import without_last_item
+from deep_rl.actor_critic.unreal.utils import autocrop_observations
+from deep_rl.utils import to_tensor, KeepTensor, detach_all, pytorch_call
+from deep_rl.utils import expand_time_dimension
 from deep_rl import register_trainer, register_agent
 from deep_rl.common.schedules import LinearSchedule, MultistepSchedule
 from deep_rl import configuration
-from deep_rl.deepq import DeepQTrainer, DeepQAgent
+import deep_rl
 from model import VisualNavigationModel as Model
 from model import UnrealDualModel, DQNModel
 
@@ -101,7 +102,7 @@ class Trainer(AuxiliaryTrainer):
         return env
 
     def create_model(self):
-        model = Model(self.env.observation_space.spaces[0].spaces[0].shape[0], self.env.action_space.n)
+        model = Model(self.env.observation_space.spaces[0].spaces[0].shape[0], self.env.single_action_space.n)
         # model_path = os.path.join(configuration.get('models_path'),'chouse-auxiliary4-supervised', 'weights.pth')
         # print('Loading weights from %s' % model_path)
         # model.load_state_dict(torch.load(model_path))
@@ -123,7 +124,7 @@ class EndTrainer(Trainer):
         ])
 
     def create_model(self):
-        model = Model(self.env.observation_space.spaces[0].spaces[0].shape[0], self.env.action_space.n)
+        model = Model(self.env.observation_space.spaces[0].spaces[0].shape[0], self.env.single_action_space.n)
         model_path = os.path.join(configuration.get('models_path'), 'dmhouse', 'weights.pth')
         print('Loading weights from %s' % model_path)
         model.load_state_dict(torch.load(model_path))
@@ -151,7 +152,7 @@ class EndTrainer(Trainer):
         ])
 
     def create_model(self):
-        model = Model(self.env.observation_space.spaces[0].spaces[0].shape[0], self.env.action_space.n)
+        model = Model(self.env.observation_space.spaces[0].spaces[0].shape[0], self.env.single_action_space.n)
         return model
 
     def process(self, *args, **kwargs):
@@ -186,7 +187,7 @@ class UnrealEndTrainer(Trainer):
         self.preload = preload
 
     def create_model(self):
-        model = UnrealDualModel(self.env.action_space.n)
+        model = UnrealDualModel(self.env.single_action_space.n)
         if self.preload:
             model_path = os.path.join(configuration.get('models_path'), 'dmhouse-unreal', 'weights.pth')
             print('Loading weights from %s' % model_path)
@@ -229,7 +230,7 @@ class A2CEndTrainer(Trainer):
         self.preload = preload
 
     def create_model(self):
-        model = UnrealDualModel(self.env.action_space.n)
+        model = UnrealDualModel(self.env.single_action_space.n)
         if self.preload:
             model_path = os.path.join(configuration.get('models_path'), 'dmhouse-a2c', 'weights.pth')
             print('Loading weights from %s' % model_path)
@@ -248,7 +249,7 @@ class A2CEndTrainer(Trainer):
 
 
 @register_trainer('dmhouse-a2c', max_time_steps=10e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
-    id='DeepmindLabCustomHouse-v0',
+    id='DMHouseCustom-v1',
 ),
     model_kwargs=dict())
 class DmhouseA2CTrainer(Trainer):
@@ -262,12 +263,12 @@ class DmhouseA2CTrainer(Trainer):
         self.learning_rate = LinearSchedule(7e-4, 0, 40e6)
 
     def create_model(self):
-        model = UnrealDualModel(self.env.action_space.n)
+        model = UnrealDualModel(self.env.single_action_space.n)
         return model
 
 
 @register_trainer('dmhouse-unreal', max_time_steps=10e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
-    id='DeepmindLabCustomHouse-v0',
+    id='DMHouseCustom-v1',
 ),
     model_kwargs=dict())
 class DmhouseUnrealTrainer(Trainer):
@@ -281,42 +282,73 @@ class DmhouseUnrealTrainer(Trainer):
         self.learning_rate = LinearSchedule(7e-4, 0, 40e6)
 
     def create_model(self):
-        model = UnrealDualModel(self.env.action_space.n)
+        model = UnrealDualModel(self.env.single_action_space.n)
         return model
 
 
-@register_trainer('dmhouse-dqn', max_time_steps=10e6, episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
-    id='DeepmindLabCustomHouse-v0',
+@register_trainer('dmhouse-ppo', max_time_steps=10e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
+    id='DMHouseCustom-v1',
 ),
     model_kwargs=dict())
-class DqnDmhouseTrainer(DeepQTrainer):
-    def __init__(self, name, env_kwargs, model_kwargs, *args, **kwargs):
-        super().__init__(name, env_kwargs, model_kwargs)
-        self.batch_size = 16
-        self.annealing_steps = 50000
-        self.preprocess_steps = 30000
-        self.replay_size = 50000
+class DmhousePPOTrainerTraineTrainer(deep_rl.actor_critic.PPO):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.learning_rate = LinearSchedule(7e-4, 0, 40e6)
+        self.num_steps = 160
+        self.num_minibatches = 8
+        self.num_processes = 16
 
-    def create_model(self, **model_kwargs):
-        return DQNModel(5)
+    def create_model(self):
+        model = UnrealDualModel(self.env.single_action_space.n)
+        return model
 
-    def create_env(self, env):
-        from environment import SingleImageWrapper
-        return SingleImageWrapper(create_wrapped_environment(**env))
+    def create_env(self, kwargs):
+        env, self.validation_env = create_envs(self.num_processes, kwargs)
+        return env
+
+
+@register_trainer('dmhouse-dqn', max_time_steps=10e6, episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
+    id='DMHouseCustom-v1',
+),
+    model_kwargs=dict())
+def build_dqn_dmhouse_trainer(*args, **kwargs):
+
+    from deep_rl.deepq import DeepQTrainer
+
+    class _Trainer(DeepQTrainer):
+        def __init__(self, name, env_kwargs, model_kwargs, *args, **kwargs):
+            super().__init__(name, env_kwargs, model_kwargs)
+            self.batch_size = 16
+            self.annealing_steps = 50000
+            self.preprocess_steps = 30000
+            self.replay_size = 50000
+
+        def create_model(self, **model_kwargs):
+            return DQNModel(5)
+
+        def create_env(self, env):
+            from environment import SingleImageWrapper
+            return SingleImageWrapper(create_wrapped_environment(**env))
+    return _Trainer(*args, **kwargs)
 
 
 @register_agent("dmhouse-dqn")
-class DqnDmhouseAgent(DeepQAgent):
-    def wrap_env(self, env):
-        from environment import SingleImageWrapper
-        return SingleImageWrapper(env)
+def build_dqn_dmhouse_agent(*args, **kwargs):
 
-    def create_model(self, **model_kwargs):
-        return DQNModel(5)
+    from deep_rl.deepq import DeepQAgent
+
+    class _Agent(DeepQAgent):
+        def wrap_env(self, env):
+            from environment import SingleImageWrapper
+            return SingleImageWrapper(env)
+
+        def create_model(self, **model_kwargs):
+            return DQNModel(5)
+    return _Agent(*args, **kwargs)
 
 
 @register_trainer('dmhouse', max_time_steps=10e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
-    id='DeepmindLabCustomHouse-v0',
+    id='DMHouseCustom-v1',
 ),
     model_kwargs=dict())
 class DmhouseTrainer(Trainer):
@@ -372,6 +404,7 @@ class Agent(UnrealAgent):
 
 
 @register_agent("dmhouse-a2c", actions=5)
+@register_agent("dmhouse-ppo", actions=5)
 @register_agent("dmhouse-unreal", actions=5)
 @register_agent("turtlebot-a2c", actions=5)
 @register_agent("turtlebot-unreal", actions=5)
@@ -400,7 +433,7 @@ def create_envs(num_training_processes, env_kwargs, use_dummy=False, wrap=None):
 
 def create_wrapped_environment(**kwargs):
     import gym
-    import environment
+    import environment  # noqa:F401
     env = gym.make(**kwargs)
     env = RewardCollector(env)
     env = TransposeImage(env)
@@ -415,4 +448,3 @@ def default_args():
         ),
         model_kwargs=dict()
     )
-
