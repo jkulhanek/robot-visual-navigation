@@ -19,7 +19,7 @@ class WandbMetricHandler(MetricHandlerBase):
         super(WandbMetricHandler, self).__init__("wandb", *args, **kwargs)
 
     def collect(self, collection, time, mode='train'):
-        wandb.log(row=dict(collection), step=time)
+        wandb.log(dict(collection), step=time)
         pass
 
 
