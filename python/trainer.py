@@ -297,6 +297,7 @@ class DmhousePPOTrainerTraineTrainer(deep_rl.actor_critic.PPO):
         self.num_steps = 160
         self.num_minibatches = 8
         self.num_processes = 16
+        self.gamma = .99
 
     def create_model(self):
         model = UnrealDualModel(self.env.single_action_space.n)
