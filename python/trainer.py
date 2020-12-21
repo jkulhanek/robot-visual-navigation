@@ -1,5 +1,6 @@
 from torch.nn import functional as F
 import torch
+import gym
 import os
 
 from deep_rl.common.env import RewardCollector, TransposeImage
@@ -304,7 +305,8 @@ class DmhousePPOTrainerTraineTrainer(deep_rl.actor_critic.PPO):
         return model
 
     def create_env(self, kwargs):
-        env, self.validation_env = create_envs(self.num_processes, kwargs)
+        wrap = lambda x: gym.wrappers.TimeLimit(x, 500)
+        env, self.validation_env = create_envs(self.num_processes, kwargs, wrap=wrap)
         return env
 
 
