@@ -6,6 +6,7 @@ import os
 from deep_rl.common.env import RewardCollector, TransposeImage
 from deep_rl.actor_critic.environment import UnrealEnvBaseWrapper
 from deep_rl.actor_critic import UnrealAgent, Unreal as UnrealTrainer
+from deep_rl.actor_critic.unreal import PPOUnreal
 from deep_rl.actor_critic.unreal.unreal import without_last_item
 from deep_rl.actor_critic.unreal.utils import autocrop_observations
 from deep_rl.utils import to_tensor, KeepTensor, detach_all, pytorch_call
@@ -36,6 +37,44 @@ def compute_auxiliary_targets(observations, cell_size, output_size):
 
 
 class AuxiliaryTrainer(UnrealTrainer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.auxiliary_weight = 0.05
+
+    def sample_training_batch(self):
+        values, report = super().sample_training_batch()
+        aux_batch = self.replay.sample_sequence() if self.auxiliary_weight > 0.0 else None
+        values['auxiliary_batch'] = aux_batch
+        return values, report
+
+    def compute_auxiliary_loss(self, model, batch, main_device):
+        loss, losses = super().compute_auxiliary_loss(model, batch, main_device)
+        auxiliary_batch = batch.get('auxiliary_batch')
+
+        # Compute pixel change gradients
+        if auxiliary_batch is not None:
+            devconv_loss = self._deconv_loss(model, auxiliary_batch, main_device)
+            loss += (devconv_loss * self.auxiliary_weight)
+            losses['aux_loss'] = devconv_loss.item()
+
+        return loss, losses
+
+    def _deconv_loss(self, model, batch, device):
+        observations, _, rewards, _ = batch
+        observations = without_last_item(observations)
+        masks = torch.ones(rewards.size(), dtype=torch.float32, device=device)
+        initial_states = to_tensor(self._initial_states(masks.size()[0]), device)
+        predictions, _ = model.forward_deconv(observations, masks, initial_states)
+        targets = compute_auxiliary_targets(observations, model.deconv_cell_size, predictions[0].size()[3:])
+        loss = 0
+        for prediction, target in zip(predictions, targets):
+            loss += F.mse_loss(prediction, target)
+
+        return loss
+
+
+class PPOAuxiliaryTrainer(PPOUnreal):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -296,7 +335,7 @@ class DmhousePPOTrainerTraineTrainer(deep_rl.actor_critic.PPO):
         super().__init__(*args, **kwargs)
         self.learning_rate = LinearSchedule(7e-4, 0, 40e6)
         self.num_steps = 160
-        self.num_minibatches = 8
+        self.num_minibatches = 4
         self.num_processes = 16
         self.gamma = .99
 
@@ -308,6 +347,51 @@ class DmhousePPOTrainerTraineTrainer(deep_rl.actor_critic.PPO):
         wrap = lambda x: gym.wrappers.TimeLimit(x, 500)
         env, self.validation_env = create_envs(self.num_processes, kwargs, wrap=wrap)
         return env
+
+
+@register_trainer('dmhouse-ppo-a2cvn', max_time_steps=10e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
+    id='DMHouseCustom-v1',
+),
+    model_kwargs=dict())
+class DmhouseA2CVNPPOTrainer(PPOAuxiliaryTrainer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.rp_weight = 1.0
+        self.pc_weight = 0.05
+        self.vr_weight = 1.0
+        self.gamma = .99
+        self.learning_rate = LinearSchedule(7e-4, 0, self.max_time_steps)
+        self.num_processes = 16
+        self.max_gradient_norm = 0.5
+        self.num_steps = 80
+        self.auxiliary_weight = 0.1
+        self.entropy_coefficient = 0.001
+        self.num_minibatches = 4
+        self.ppo_epochs = 4
+
+    def _get_input_for_pixel_control(self, inputs):
+        return inputs[0][0]
+
+    def create_env(self, kwargs):
+        env, self.validation_env = create_envs(self.num_processes, kwargs)
+        return env
+
+    def create_model(self):
+        model = Model(3, self.env.single_action_space.n)
+        # model_path = os.path.join(configuration.get('models_path'),'chouse-auxiliary4-supervised', 'weights.pth')
+        # print('Loading weights from %s' % model_path)
+        # model.load_state_dict(torch.load(model_path))
+        return model
+
+
+@register_trainer('dmhouse-ppo-unreal', max_time_steps=10e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
+    id='DMHouseCustom-v1',
+),
+    model_kwargs=dict())
+class DmhouseUnrealPPOTrainer(DmhouseA2CVNPPOTrainer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.auxiliary_weight = 0.0
 
 
 @register_trainer('dmhouse-dqn', max_time_steps=10e6, episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
