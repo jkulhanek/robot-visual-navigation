@@ -39,7 +39,7 @@ def compute_auxiliary_targets(observations, cell_size, output_size):
 class AuxiliaryTrainer(UnrealTrainer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        self.allow_gpu = True
         self.auxiliary_weight = 0.05
 
     def sample_training_batch(self):
