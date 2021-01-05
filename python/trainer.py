@@ -363,7 +363,8 @@ class DmhouseA2CVNPPOTrainer(PPOAuxiliaryTrainer):
         self.learning_rate = LinearSchedule(7e-4, 0, self.max_time_steps)
         self.num_processes = 16
         self.max_gradient_norm = 0.5
-        self.num_steps = 80
+        self.num_steps = 20
+        # self.num_steps = 80
         self.auxiliary_weight = 0.1
         self.entropy_coefficient = 0.001
         self.num_minibatches = 4
@@ -373,7 +374,8 @@ class DmhouseA2CVNPPOTrainer(PPOAuxiliaryTrainer):
         return inputs[0][0]
 
     def create_env(self, kwargs):
-        wrap = lambda x: gym.wrappers.TimeLimit(x, 2000)
+        # wrap = lambda x: gym.wrappers.TimeLimit(x, 2000)
+        wrap = lambda x: x
         env, self.validation_env = create_envs(self.num_processes, kwargs, wrap=wrap)
         return env
 
