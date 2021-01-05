@@ -344,7 +344,7 @@ class DmhousePPOTrainerTraineTrainer(deep_rl.actor_critic.PPO):
         return model
 
     def create_env(self, kwargs):
-        wrap = lambda x: gym.wrappers.TimeLimit(x, 500)
+        wrap = lambda x: gym.wrappers.TimeLimit(x, 2000)
         env, self.validation_env = create_envs(self.num_processes, kwargs, wrap=wrap)
         return env
 
@@ -373,7 +373,7 @@ class DmhouseA2CVNPPOTrainer(PPOAuxiliaryTrainer):
         return inputs[0][0]
 
     def create_env(self, kwargs):
-        wrap = lambda x: gym.wrappers.TimeLimit(x, 500)
+        wrap = lambda x: gym.wrappers.TimeLimit(x, 2000)
         env, self.validation_env = create_envs(self.num_processes, kwargs, wrap=wrap)
         return env
 
