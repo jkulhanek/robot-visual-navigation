@@ -373,7 +373,8 @@ class DmhouseA2CVNPPOTrainer(PPOAuxiliaryTrainer):
         return inputs[0][0]
 
     def create_env(self, kwargs):
-        env, self.validation_env = create_envs(self.num_processes, kwargs)
+        wrap = lambda x: gym.wrappers.TimeLimit(x, 500)
+        env, self.validation_env = create_envs(self.num_processes, kwargs, wrap=wrap)
         return env
 
     def create_model(self):
