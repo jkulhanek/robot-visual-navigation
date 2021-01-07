@@ -344,7 +344,7 @@ class DmhousePPOTrainerTraineTrainer(deep_rl.actor_critic.PPO):
         return model
 
     def create_env(self, kwargs):
-        wrap = lambda x: gym.wrappers.TimeLimit(x, 2000)
+        def wrap(x): return gym.wrappers.TimeLimit(x, 2000)
         env, self.validation_env = create_envs(self.num_processes, kwargs, wrap=wrap)
         return env
 
@@ -354,28 +354,28 @@ class DmhousePPOTrainerTraineTrainer(deep_rl.actor_critic.PPO):
 ),
     model_kwargs=dict())
 class DmhouseA2CVNPPOTrainer(PPOAuxiliaryTrainer):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, num_steps: int = 80, max_gradient_norm: float = 1.0, gamma: float = 0.99, learning_rate: float = 2e-4, num_processes: int = 16, ppo_epochs: int = 4, num_minibatches: int = 4, entropy_coefficient: float = 0.01, **kwargs):
         super().__init__(*args, **kwargs)
         self.rp_weight = 1.0
         self.pc_weight = 0.05
         self.vr_weight = 1.0
-        self.gamma = .99
-        self.learning_rate = LinearSchedule(7e-4, 0, self.max_time_steps)
-        self.num_processes = 16
-        self.max_gradient_norm = 0.5
-        self.num_steps = 20
+        self.gamma = gamma
+        self.learning_rate = LinearSchedule(learning_rate, 0, self.max_time_steps)
+        self.num_processes = num_processes
+        self.max_gradient_norm = max_gradient_norm
+        self.num_steps = num_steps
         # self.num_steps = 80
         self.auxiliary_weight = 0.1
-        self.entropy_coefficient = 0.001
-        self.num_minibatches = 4
-        self.ppo_epochs = 4
+        self.entropy_coefficient = entropy_coefficient
+        self.num_minibatches = num_minibatches
+        self.ppo_epochs = ppo_epochs
 
     def _get_input_for_pixel_control(self, inputs):
         return inputs[0][0]
 
     def create_env(self, kwargs):
         # wrap = lambda x: gym.wrappers.TimeLimit(x, 2000)
-        wrap = lambda x: x
+        def wrap(x): return x
         env, self.validation_env = create_envs(self.num_processes, kwargs, wrap=wrap)
         return env
 
