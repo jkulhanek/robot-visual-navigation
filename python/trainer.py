@@ -354,7 +354,7 @@ class DmhousePPOTrainerTraineTrainer(deep_rl.actor_critic.PPO):
 ),
     model_kwargs=dict())
 class DmhouseA2CVNPPOTrainer(PPOAuxiliaryTrainer):
-    def __init__(self, *args, num_steps: int = 80, max_gradient_norm: float = 1.0, gamma: float = 0.99, learning_rate: float = 2e-4, num_processes: int = 16, ppo_epochs: int = 4, num_minibatches: int = 4, entropy_coefficient: float = 0.01, **kwargs):
+    def __init__(self, *args, num_steps: int = 80, max_gradient_norm: float = 1.0, gamma: float = 0.99, learning_rate: float = 2e-4, num_processes: int = 16, ppo_epochs: int = 4, num_minibatches: int = 4, entropy_coefficient: float = 0.01 limit_environment_steps: int = None, **kwargs):
         super().__init__(*args, **kwargs)
         self.rp_weight = 1.0
         self.pc_weight = 0.05
@@ -369,13 +369,16 @@ class DmhouseA2CVNPPOTrainer(PPOAuxiliaryTrainer):
         self.entropy_coefficient = entropy_coefficient
         self.num_minibatches = num_minibatches
         self.ppo_epochs = ppo_epochs
+        self.limit_environment_steps = limit_environment_steps
 
     def _get_input_for_pixel_control(self, inputs):
         return inputs[0][0]
 
     def create_env(self, kwargs):
-        # wrap = lambda x: gym.wrappers.TimeLimit(x, 2000)
-        def wrap(x): return x
+        if self.limit_environment_steps is not None:
+            wrap = lambda x: gym.wrappers.TimeLimit(x, self.limit_environment_steps)
+        else:
+            wrap = lambda x: x
         env, self.validation_env = create_envs(self.num_processes, kwargs, wrap=wrap)
         return env
 
