@@ -354,7 +354,7 @@ class DmhousePPOTrainerTraineTrainer(deep_rl.actor_critic.PPO):
 ),
     model_kwargs=dict())
 class DmhouseA2CVNPPOTrainer(PPOAuxiliaryTrainer):
-    def __init__(self, *args, num_steps: int = 80, max_gradient_norm: float = 1.0, gamma: float = 0.99, learning_rate: float = 2e-4, num_processes: int = 16, ppo_epochs: int = 4, num_minibatches: int = 4, entropy_coefficient: float = 0.01, limit_environment_steps: int = None, **kwargs):
+    def __init__(self, *args, num_steps: int = 80, max_gradient_norm: float = 1.0, gamma: float = 0.99, learning_rate: float = 2e-4, num_processes: int = 16, ppo_epochs: int = 4, num_minibatches: int = 4, entropy_coefficient: float = 0.01, limit_environment_steps: int = -1, **kwargs):
         super().__init__(*args, **kwargs)
         self.rp_weight = 1.0
         self.pc_weight = 0.05
@@ -375,7 +375,7 @@ class DmhouseA2CVNPPOTrainer(PPOAuxiliaryTrainer):
         return inputs[0][0]
 
     def create_env(self, kwargs):
-        if self.limit_environment_steps is not None:
+        if self.limit_environment_steps is not None and self.limit_environment_steps > 0:
             wrap = lambda x: gym.wrappers.TimeLimit(x, self.limit_environment_steps)
         else:
             wrap = lambda x: x
