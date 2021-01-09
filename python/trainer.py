@@ -355,7 +355,7 @@ class DmhousePPOTrainerTraineTrainer(deep_rl.actor_critic.PPO):
     model_kwargs=dict())
 @register_trainer('turtlebot-ppo', max_time_steps=40e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
     id='TurtleLab-v0',
-    has_end_action=False
+    has_end_action=True
 ), model_kwargs=dict())
 class DmhouseA2CVNPPOTrainer(PPOAuxiliaryTrainer):
     def __init__(self, *args, num_steps: int = 80, max_gradient_norm: float = 1.0, gamma: float = 0.99, learning_rate: float = 2e-4, num_processes: int = 16, ppo_epochs: int = 4, num_minibatches: int = 4, entropy_coefficient: float = 0.001, limit_environment_steps: int = -1, use_pretrained: bool = False, **kwargs):
