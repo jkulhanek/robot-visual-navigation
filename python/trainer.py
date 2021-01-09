@@ -354,7 +354,8 @@ class DmhousePPOTrainerTraineTrainer(deep_rl.actor_critic.PPO):
     model_kwargs=dict())
 @register_trainer('turtlebot-ppo', max_time_steps=40e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
     id='TurtleLab-v0',
-    has_end_action=True
+    has_end_action=True,
+    use_dummy=True
 ), model_kwargs=dict())
 class DmhouseA2CVNPPOTrainer(PPOAuxiliaryTrainer):
     def __init__(self, *args, num_steps: int = 80, max_gradient_norm: float = 0.5, gamma: float = 0.99, learning_rate: float = 2e-4, num_processes: int = 16, ppo_epochs: int = 4, num_minibatches: int = 4, entropy_coefficient: float = 0.01, limit_environment_steps: int = -1, use_pretrained: bool = False, **kwargs):
@@ -374,16 +375,23 @@ class DmhouseA2CVNPPOTrainer(PPOAuxiliaryTrainer):
         self.ppo_epochs = ppo_epochs
         self.limit_environment_steps = limit_environment_steps
         self.use_pretrained = use_pretrained
+        self.environment_complexity = MultistepSchedule(3.0, [
+            (500000, LinearSchedule(3.0, 36.0, 4000000)),
+            (4500000, 100.0),
+        ])
 
     def _get_input_for_pixel_control(self, inputs):
         return inputs[0][0]
 
     def create_env(self, kwargs):
+        use_dummy = False
+        if 'use_dummy' in kwargs:
+            use_dummy = kwargs.pop('use_dummy')
         if self.limit_environment_steps is not None and self.limit_environment_steps > 0:
             wrap = lambda x: gym.wrappers.TimeLimit(x, self.limit_environment_steps)
         else:
             wrap = lambda x: x
-        env, self.validation_env = create_envs(self.num_processes, kwargs, wrap=wrap)
+        env, self.validation_env = create_envs(self.num_processes, kwargs, wrap=wrap, use_dummy=use_dummy)
         return env
 
     def create_model(self):
@@ -393,6 +401,12 @@ class DmhouseA2CVNPPOTrainer(PPOAuxiliaryTrainer):
             print('Loading weights from %s' % model_path)
             model.load_state_dict(torch.load(model_path))
         return model
+
+    def process(self, *args, **kwargs):
+        self.env.call_unwrapped("set_complexity", int(self.environment_complexity))
+        a, b, metric_context = super().process(*args, **kwargs)
+        metric_context.add_last_value_scalar('environment_complexity', int(self.environment_complexity))
+        return a, b, metric_context
 
 
 @register_trainer('dmhouse-ppo-unreal', max_time_steps=10e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
@@ -514,6 +528,14 @@ class UAgent(Agent):
         return model
 
 
+def add_call_unwrapped(venv):
+    def call_unwrapped(name, *args, **kwargs):
+        for env in venv.envs:
+            getattr(env, name)(*args, **kwargs)
+    setattr(venv, 'call_unwrapped', call_unwrapped)
+    return venv
+
+
 def create_envs(num_training_processes, env_kwargs, use_dummy=False, wrap=None):
     from environment import create_multiscene
 
@@ -526,6 +548,8 @@ def create_envs(num_training_processes, env_kwargs, use_dummy=False, wrap=None):
         return env
     env = create_multiscene(num_training_processes, wrap=wrap_internal, use_dummy=use_dummy, **env_kwargs)
     val_env = create_multiscene(VALIDATION_PROCESSES, wrap=wrap_internal, use_dummy=use_dummy, **env_kwargs)
+    env = add_call_unwrapped(env)
+    val_env = add_call_unwrapped(val_env)
     return env, val_env
 
 
