@@ -358,7 +358,7 @@ class DmhousePPOTrainerTraineTrainer(deep_rl.actor_critic.PPO):
     has_end_action=False
 ), model_kwargs=dict())
 class DmhouseA2CVNPPOTrainer(PPOAuxiliaryTrainer):
-    def __init__(self, *args, num_steps: int = 80, max_gradient_norm: float = 1.0, gamma: float = 0.99, learning_rate: float = 2e-4, num_processes: int = 16, ppo_epochs: int = 4, num_minibatches: int = 4, entropy_coefficient: float = 0.001, limit_environment_steps: int = -1, **kwargs):
+    def __init__(self, *args, num_steps: int = 80, max_gradient_norm: float = 1.0, gamma: float = 0.99, learning_rate: float = 2e-4, num_processes: int = 16, ppo_epochs: int = 4, num_minibatches: int = 4, entropy_coefficient: float = 0.001, limit_environment_steps: int = -1, use_pretrained: bool = False, **kwargs):
         super().__init__(*args, **kwargs)
         self.rp_weight = 1.0
         self.pc_weight = 0.05
@@ -374,6 +374,7 @@ class DmhouseA2CVNPPOTrainer(PPOAuxiliaryTrainer):
         self.num_minibatches = num_minibatches
         self.ppo_epochs = ppo_epochs
         self.limit_environment_steps = limit_environment_steps
+        self.use_pretrained = use_pretrained
 
     def _get_input_for_pixel_control(self, inputs):
         return inputs[0][0]
@@ -388,9 +389,10 @@ class DmhouseA2CVNPPOTrainer(PPOAuxiliaryTrainer):
 
     def create_model(self):
         model = Model(3, self.env.single_action_space.n)
-        # model_path = os.path.join(configuration.get('models_path'),'chouse-auxiliary4-supervised', 'weights.pth')
-        # print('Loading weights from %s' % model_path)
-        # model.load_state_dict(torch.load(model_path))
+        if self.use_pretrained:
+            model_path = os.path.join(configuration.get('models_path'), 'dmhouse', 'weights.pth')
+            print('Loading weights from %s' % model_path)
+            model.load_state_dict(torch.load(model_path))
         return model
 
 
