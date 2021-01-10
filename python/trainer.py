@@ -336,6 +336,8 @@ class DmhousePPOTrainerTraineTrainer(deep_rl.actor_critic.PPO):
         self.num_steps = 160
         self.num_minibatches = 4
         self.num_processes = 16
+        self.entropy_coefficient = 0.01
+        self.value_coefficient = 0.25
         self.gamma = .99
 
     def create_model(self):
@@ -343,7 +345,7 @@ class DmhousePPOTrainerTraineTrainer(deep_rl.actor_critic.PPO):
         return model
 
     def create_env(self, kwargs):
-        def wrap(x): return gym.wrappers.TimeLimit(x, 2000)
+        wrap = lambda x: x
         env, self.validation_env = create_envs(self.num_processes, kwargs, wrap=wrap)
         return env
 
