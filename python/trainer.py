@@ -535,6 +535,8 @@ class UAgent(Agent):
 
 def add_call_unwrapped(venv):
     def call_unwrapped(name, *args, **kwargs):
+        if not hasattr(venv, 'envs'):
+            return
         for env in venv.envs:
             getattr(env, name)(*args, **kwargs)
     setattr(venv, 'call_unwrapped', call_unwrapped)
