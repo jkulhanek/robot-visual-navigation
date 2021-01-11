@@ -330,13 +330,13 @@ class DmhouseUnrealTrainer(Trainer):
 ),
     model_kwargs=dict())
 class DmhousePPOTrainerTraineTrainer(deep_rl.actor_critic.PPO):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, entropy_coefficient=0.01, **kwargs):
         super().__init__(*args, **kwargs)
         self.learning_rate = LinearSchedule(2e-4, 0, 40e6)
         self.num_steps = 160
         self.num_minibatches = 4
         self.num_processes = 16
-        self.entropy_coefficient = 0.01
+        self.entropy_coefficient = entropy_coefficient
         self.value_coefficient = 0.25
         self.gamma = .99
 
@@ -354,24 +354,27 @@ class DmhousePPOTrainerTraineTrainer(deep_rl.actor_critic.PPO):
     id='DMHouseCustom-v1',
 ),
     model_kwargs=dict())
-@register_trainer('turtlebot-ppo', max_time_steps=40e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
+@register_trainer('turtlebot-ppo-a2cvn', max_time_steps=40e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
     id='TurtleLab-v0',
     has_end_action=True,
     use_dummy=True
 ), model_kwargs=dict())
 class DmhouseA2CVNPPOTrainer(PPOAuxiliaryTrainer):
-    def __init__(self, *args, num_steps: int = 80, max_gradient_norm: float = 0.5, gamma: float = 0.99, learning_rate: float = 2e-4, num_processes: int = 16, ppo_epochs: int = 4, num_minibatches: int = 4, entropy_coefficient: float = 0.01, limit_environment_steps: int = -1, use_pretrained: bool = False, **kwargs):
+    def __init__(self, *args, num_steps: int = 160, max_gradient_norm: float = 0.5, gamma: float = 0.99, learning_rate: float = 2e-4, num_processes: int = 16, ppo_epochs: int = 4, num_minibatches: int = 4, entropy_coefficient: float = 0.01, limit_environment_steps: int = -1, use_pretrained: bool = False, **kwargs):
         super().__init__(*args, **kwargs)
+        self.learning_rate = LinearSchedule(2e-4, 0, 40e6)
+        self.value_coefficient = 0.25
         self.rp_weight = 0.25
         self.pc_weight = 0.0125
-        self.vr_weight = 0.0
+        self.vr_weight = 0.25
+        self.auxiliary_weight = 0.025
+
         self.gamma = gamma
         self.learning_rate = LinearSchedule(learning_rate, 0, self.max_time_steps)
         self.num_processes = num_processes
         self.max_gradient_norm = max_gradient_norm
         self.num_steps = num_steps
         # self.num_steps = 80
-        self.auxiliary_weight = 0.025
         self.entropy_coefficient = entropy_coefficient
         self.num_minibatches = num_minibatches
         self.ppo_epochs = ppo_epochs
