@@ -1,6 +1,11 @@
 # Visual Navigation in Real-World Indoor Environments Using End-to-End Deep Reinforcement Learning [Official]
 This repository contains the official implementation of paper Visual Navigation in Real-World Indoor Environments Using End-to-End Deep Reinforcement Learning.
 
+[Paper](https://arxiv.org/pdf/2010.10903.pdf)&nbsp;&nbsp;&nbsp;
+[Web](https://jkulhanek.github.io/robot-visual-navigation/)
+
+<br>
+
 ## Getting started
 Before getting started, ensure, that you have Python 3.6+ ready. Start by cloning this repository with all submodules.
 ```bash
