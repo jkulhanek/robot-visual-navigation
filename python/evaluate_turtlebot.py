@@ -48,6 +48,7 @@ class ExpandDimWrapper:
 def dist(position1, position2):
     return math.sqrt((position1[0] - position2[0]) ** 2 + (position1[1] - position2[1]) ** 2)
 
+
 class Evaluator:
     def __init__(self, agent, env, num_episodes):
         self.agent = agent
@@ -67,7 +68,7 @@ class Evaluator:
                     tasks.append(((x, y, r), tuple(map(int, split[3:]))))
         return tasks
 
-    def _run_episode(self, task = None):
+    def _run_episode(self, task=None):
         if task is None:
             o = self.env.reset()
         else:

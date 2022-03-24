@@ -1,7 +1,7 @@
 torch>=1.7.1
 h5py>=3.6.0
 deep-rl==0.3.7
-dmhouse==1.0.9
+dmhouse==1.0.10
 numpy==1.19.5
 gym==0.23.1
 matplotlib>=3.5.1

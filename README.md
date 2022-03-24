@@ -7,7 +7,8 @@ This repository contains the official implementation of paper Visual Navigation 
 <br>
 
 ## Getting started
-Before getting started, ensure, that you have Python 3.6+ ready. We recommend activating a new virtual environment for the repository:
+Before getting started, ensure, that you have Python 3.6+ ready.
+We recommend activating a new virtual environment for the repository:
 ```bash
 python -m venv robot-visual-navigation-env
 source robot-visual-navigation-env/bin/activate
@@ -20,6 +21,12 @@ cd robot-visual-navigation
 pip install -r requirements.txt
 cd python
 ```
+
+For DMHouse package, we recommend starting with Ubuntu 18+ and installing dependencies as follows:
+```bash
+apt-get install libsdl2-dev libosmesa6-dev gettext g++ unzip zip curl gnupg libstdc++6
+```
+
 
 ## Downloading the trained models and datasets
 You can download the pre-trained models from:
