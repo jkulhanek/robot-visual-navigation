@@ -44,8 +44,7 @@ class ImageEnvironment(gym.Env):
     def __init__(self, screen_size=(84, 84), dataset_name='turtle_room', path=None, has_end_action=False, augment_images=True, **kwargs):
         super(ImageEnvironment, self).__init__(**kwargs)
         if path is None:
-            path = (os.environ['DATASETS_PATH'] if 'DATASETS_PATH' in os.environ else os.path.expanduser(
-                '~/datasets')) + '/%s/grid_compiled.hdf5' % dataset_name
+            path = os.path.expanduser(f'/mnt/ciirc/.cache/robot-visual-navigation/datasets/{dataset_name}_compiled.hdf5')
         self.path = path
         self.has_end_action = has_end_action
         self._file = None

@@ -1,0 +1,8 @@
+torch>=1.7.1
+h5py>=3.6.0
+deep-rl==0.3.7
+dmhouse==1.0.7
+numpy>=1.21.5
+gym==0.23.1
+matplotlib>=3.5.1
+wandb>=0.12.11

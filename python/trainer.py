@@ -111,11 +111,6 @@ class PPOAuxiliaryTrainer(PPOUnreal):
         return loss
 
 
-@register_trainer('turtlebot', max_time_steps=40e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
-    id='TurtleLab-v0',
-    has_end_action=False
-),
-    model_kwargs=dict())
 class Trainer(AuxiliaryTrainer):
     def __init__(self, *args, allow_gpu=True, **kwargs):
         super().__init__(*args, **kwargs)
@@ -148,7 +143,7 @@ class Trainer(AuxiliaryTrainer):
         return model
 
 
-@register_trainer('turtlebot-end', max_time_steps=30e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
+@register_trainer('turtlebot', max_time_steps=30e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
     id='TurtleLab-v0',
     has_end_action=True
 ),
@@ -476,8 +471,7 @@ class DmhouseTrainer(Trainer):
 
 
 @register_agent("turtlebot-noprior", actions=5)
-@register_agent("turtlebot-end", actions=5)
-@register_agent("turtlebot", actions=4)
+@register_agent("turtlebot", actions=5)
 @register_agent("dmhouse", actions=5)
 class Agent(UnrealAgent):
     def __init__(self, actions, *args, **kwargs):
