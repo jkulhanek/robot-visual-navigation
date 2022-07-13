@@ -164,7 +164,7 @@ if __name__ == '__main__':
     from argparse import ArgumentParser
 
     parser = ArgumentParser(description="Script to compile the original .hdf5 dataset and add augmented images")
-    parser.add_argument("path", "Path to the original .hdf5 dataset")
+    parser.add_argument("path", help="Path to the original .hdf5 dataset")
     args = parser.parse_args()
     path = os.path.splitext(args.path)[0]
 
