@@ -5,7 +5,6 @@ import random
 import numpy as np
 from deep_rl.common.env import ScaledFloatFrame
 from deep_rl.common.vec_env import SubprocVecEnv, DummyVecEnv
-from .dmlab_environment import DeepmindLabEnv, MAP
 
 
 def _createImageEnvironment(**kwargs):
@@ -13,9 +12,17 @@ def _createImageEnvironment(**kwargs):
     return ImageEnvironmentWrapper(TimeLimit(ImageEnvironment(**kwargs), 300))
 
 
-def _createDmlabEnvironment(**kwargs):
-    from .dmlab_environment import DeepmindLabEnv
-    return ScaledFloatFrame(DeepmindLabEnv(**kwargs))
+def _createDmhouseEnvironment(**kwargs):
+    import dmhouse  # Required to register gym
+    _ = dmhouse
+
+    # Conversion from the game units to meters
+    # NOTE: in the paper the distance travelled was computed slightly differently
+    # leading to (slightly) different results
+    game_units_to_meters = 1 / 57.144
+    env = gym.make('DMHouse-v1', **kwargs, renderer='software',
+                   level="custom/old_house", distance_scale=game_units_to_meters, steps_repeat=4)
+    return ScaledFloatFrame(env)
 
 
 class SingleImageWrapper(gym.ObservationWrapper):
@@ -53,12 +60,11 @@ def create_multiscene(num_processes, wrap=lambda e: e, seed=None, use_dummy=Fals
         return SubprocVecEnv(funcs)
 
 
+
 gym.register("TurtleLab-v0", entry_point=_createImageEnvironment,
              kwargs=dict(dataset_name='turtle_room'))
-
-for key, l in MAP.items():
-    gym.register(
-        id='DeepmindLab%s-v0' % key,
-        entry_point=_createDmlabEnvironment,
-        kwargs=dict(scene=l)
-    )
+gym.register(
+    id='DMHouseCustom-v1',
+    entry_point=_createDmhouseEnvironment,
+    kwargs=dict()
+)
