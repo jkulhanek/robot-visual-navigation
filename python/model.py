@@ -1,8 +1,9 @@
 import torch
 from torch import nn
+from torch.nn import functional as F
 import math
 from deep_rl.model import TimeDistributed, MaskedRNN, Flatten
-from deep_rl.actor_critic.model import UnrealModel
+from deep_rl.a2c_unreal.model import UnrealModel
 
 
 class Unflatten(nn.Module):
@@ -27,7 +28,8 @@ class VisualNavigationModel(nn.Module):
 
         elif type(module) in [nn.Conv2d, nn.ConvTranspose2d, nn.Linear]:
             nn.init.zeros_(module.bias.data)
-            fan_in, fan_out = nn.init._calculate_fan_in_and_fan_out(module.weight.data)
+            fan_in, fan_out = nn.init._calculate_fan_in_and_fan_out(
+                module.weight.data)
             d = 1.0 / math.sqrt(fan_in)
             nn.init.uniform_(module.weight.data, -d, d)
 
@@ -55,7 +57,8 @@ class VisualNavigationModel(nn.Module):
         ))
 
         self.critic = TimeDistributed(nn.Linear(self.main_output_size, 1))
-        self.policy_logits = TimeDistributed(nn.Linear(self.main_output_size, num_outputs))
+        self.policy_logits = TimeDistributed(
+            nn.Linear(self.main_output_size, num_outputs))
 
         self.lstm_layers = 1
         self.lstm_hidden_size = self.main_output_size
@@ -162,7 +165,8 @@ class VisualNavigationModel(nn.Module):
         features = self.pc_base(features)
         features = features.view(*(features.size()[:2] + (32, 9, 9)))
         action_features = self.pc_action(features)
-        features = self.pc_value(features) + action_features - action_features.mean(2, keepdim=True)
+        features = self.pc_value(
+            features) + action_features - action_features.mean(2, keepdim=True)
         return features, states
 
     def value_prediction(self, inputs, masks, states):
@@ -235,4 +239,3 @@ class DQNModel(nn.Module):
         adventage = self.adventage(features)
         features = adventage + value - adventage.mean()
         return features
-

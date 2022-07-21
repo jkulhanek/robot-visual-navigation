@@ -6,18 +6,20 @@ import os
 import random
 from collections import deque
 
-@register_agent("random", is_end = True)
+
+@register_agent("random", is_end=True)
 class RandomAgent(AbstractAgent):
-    def __init__(self, *args, is_end = True, **kwargs):
+    def __init__(self, *args, is_end=True, **kwargs):
         self.is_end = is_end
         super().__init__(*args, **kwargs)
 
     def act(self, o):
         return [random.randrange(5 if self.is_end else 4)]
 
-@register_agent("random-end", is_end = True)
+
+@register_agent("random-end", is_end=True)
 class RandomAgent(AbstractAgent):
-    def __init__(self, *args, is_end = True, **kwargs):
+    def __init__(self, *args, is_end=True, **kwargs):
         self.is_end = is_end
         super().__init__(*args, **kwargs)
         self.env = None
@@ -27,6 +29,7 @@ class RandomAgent(AbstractAgent):
 
     def act(self, o):
         return [random.randrange(4)] if self.env._position != self.env._goal else [4]
+
 
 @register_agent("turtleroom-constant-stochastic")
 class StochasticAgent(AbstractAgent):
@@ -46,7 +49,8 @@ class StochasticAgent(AbstractAgent):
         self._actions = actions
 
     def act(self, obs):
-        return [np.random.choice(list(range(len(self._actions))), p = self._actions)]
+        return [np.random.choice(list(range(len(self._actions))), p=self._actions)]
+
 
 @register_agent("shortest-path")
 class ShortestPathAgent(AbstractAgent):
@@ -87,15 +91,13 @@ class ShortestPathAgent(AbstractAgent):
                 sn.append(a)
                 o.append((npos, sn))
                 closed.add(npos)
-        return None     
-            
+        return None
+
     def act(self, o):
         if self.env is None:
             raise Exception("Must call 'set_environment'")
-            
+
         if len(self.steps) == 0:
             self.steps = self._compute_optimal_steps()
 
         return [self.steps.pop()]
-    
-        

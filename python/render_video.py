@@ -4,6 +4,7 @@ from cv2 import VideoWriter, VideoWriter_fourcc
 import numpy as np
 import cv2
 import os
+import argparse
 from deep_rl import make_agent
 import deep_rl
 import torch.multiprocessing as mp
@@ -47,8 +48,8 @@ class RenderVideoWrapper(gym.Wrapper):
         video_id = len(os.listdir(self.path)) + 1
         output_filename = "vid-%s.avi" % video_id
         height, width = self.size
-        writer = VideoWriter(os.path.join(self.path, output_filename),
-                             VideoWriter_fourcc(*"XVID"), 30.0, (2 * width, height))
+        writer = VideoWriter(os.path.join(self.path, output_filename), VideoWriter_fourcc(
+            *"XVID"), 30.0, (2 * width, height))
 
         for state in self.ep_states:
             frame = np.concatenate([state[0], state[1]], axis=1)
@@ -88,4 +89,3 @@ if __name__ == '__main__':
                 print("collected reward: %s" % reward)
             if done:
                 break
-

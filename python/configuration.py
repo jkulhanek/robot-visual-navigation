@@ -6,7 +6,8 @@ default_configuration = dict(
     #    server = 'http://localhost',
     #    port = 8097
     # ),
-    models_path=os.environ.get('MODELS_PATH', os.path.expanduser('~/.cache/robot-visual-navigation/models')),
+    models_path=os.environ.get('MODELS_PATH', os.path.expanduser(
+        '~/.cache/robot-visual-navigation/models')),
     videos_path='results/videos'
 )
 
@@ -16,6 +17,7 @@ configuration = dict(**default_configuration)
 if os.path.exists(os.path.join(basepath, 'config.json')):
     with open(os.path.join(basepath, 'config.json'), 'r') as f:
         configuration.update(**json.load(f))
+
 
 def expand_user(d):
     if isinstance(d, dict):
