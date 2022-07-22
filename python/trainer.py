@@ -106,7 +106,7 @@ class Trainer(AuxiliaryTrainer):
         return model
 
 
-@register_trainer('turtlebot', max_time_steps=30e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
+@register_trainer('turtlebot', max_time_steps=30e6, validation_period=200, validation_episodes=20, episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
     id='TurtleLab-v0',
     has_end_action=True
 ),
@@ -138,7 +138,7 @@ class EndTrainer(Trainer):
         return a, b, metric_context
 
 
-@register_trainer('turtlebot-noprior', max_time_steps=30e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
+@register_trainer('turtlebot-noprior', max_time_steps=30e6, validation_period=200, validation_episodes=20, episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
     id='TurtleLab-v0',
     has_end_action=True
 ),
@@ -166,12 +166,12 @@ class EndTrainer(Trainer):
         return a, b, metric_context
 
 
-@register_trainer('turtlebot-unreal', max_time_steps=30e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
+@register_trainer('turtlebot-unreal', max_time_steps=30e6, validation_period=200, validation_episodes=20, episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
     id='TurtleLab-v0',
     has_end_action=True
 ),
     model_kwargs=dict())
-@register_trainer('turtlebot-unreal-noprior', preload=False, max_time_steps=30e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
+@register_trainer('turtlebot-unreal-noprior', preload=False, max_time_steps=30e6, validation_period=200, validation_episodes=20, episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
     id='TurtleLab-v0',
     has_end_action=True
 ),
@@ -213,12 +213,12 @@ class UnrealEndTrainer(Trainer):
         return a, b, metric_context
 
 
-@register_trainer('turtlebot-a2c', max_time_steps=30e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
+@register_trainer('turtlebot-a2c', max_time_steps=30e6, validation_period=200, validation_episodes=20, episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
     id='TurtleLab-v0',
     has_end_action=True
 ),
     model_kwargs=dict())
-@register_trainer('turtlebot-a2c-noprior', preload=False, max_time_steps=30e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
+@register_trainer('turtlebot-a2c-noprior', preload=False, max_time_steps=30e6, validation_period=200, validation_episodes=20, episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
     id='TurtleLab-v0',
     has_end_action=True
 ),
@@ -260,7 +260,7 @@ class UnrealEndTrainer(Trainer):
         return a, b, metric_context
 
 
-@register_trainer('dmhouse-a2c', max_time_steps=10e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
+@register_trainer('dmhouse-a2c', max_time_steps=10e6, validation_period=200, validation_episodes=20, episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
     id='DMHouseCustom-v1',
 ),
     model_kwargs=dict())
@@ -279,7 +279,7 @@ class DmhouseA2CTrainer(Trainer):
         return model
 
 
-@register_trainer('dmhouse-unreal', max_time_steps=10e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
+@register_trainer('dmhouse-unreal', max_time_steps=10e6, validation_period=200, validation_episodes=20, episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
     id='DMHouseCustom-v1',
 ),
     model_kwargs=dict())
@@ -298,7 +298,7 @@ class DmhouseUnrealTrainer(Trainer):
         return model
 
 
-@register_trainer('dmhouse', max_time_steps=10e6, validation_period=200, validation_episodes=20,  episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
+@register_trainer('dmhouse', max_time_steps=10e6, validation_period=200, validation_episodes=20, episode_log_interval=10, saving_period=100000, save=True, env_kwargs=dict(
     id='DMHouseCustom-v1',
 ),
     model_kwargs=dict())
