@@ -60,7 +60,7 @@ def pixel_control_loss(observations, actions, action_values, gamma=0.9, cell_siz
         for i in reversed(range(T)):
             previous_rewards = last_rewards if i + \
                 1 == T else pseudo_rewards[:, i + 1]
-            pseudo_rewards[:, i].add_(gamma, previous_rewards)
+            pseudo_rewards[:, i].add_(previous_rewards, alpha=gamma)
 
     q_actions = actions.view(*batch_shape + (1, 1, 1)).repeat(1,
                                                               1, 1, action_value_shape[3], action_value_shape[4])
@@ -87,7 +87,7 @@ def discounted_commulative_reward(rewards, base_value, gamma):
     for i in reversed(range(max_t)):
         next_values = base_value if i + \
             1 == max_t else cummulative_reward[:, i + 1]
-        cummulative_reward[:, i].add_(gamma, next_values)
+        cummulative_reward[:, i].add_(next_values, alpha=gamma)
 
     return cummulative_reward
 
