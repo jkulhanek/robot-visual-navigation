@@ -4,7 +4,7 @@ from gym.wrappers import TimeLimit
 import random
 import numpy as np
 from deep_rl.common.env import ScaledFloatFrame
-from gym.vector import AsyncVectorEnv, SyncVectorEnv
+from deep_rl.common.vec_env import SubprocVecEnv, DummyVecEnv
 
 
 def _createImageEnvironment(**kwargs):
@@ -21,6 +21,7 @@ def _createDmhouseEnvironment(**kwargs):
     # leading to (slightly) different results
     game_units_to_meters = 1 / 57.144
     env = gym.make('DMHouse-v1', **kwargs, renderer='software',
+                   disable_env_checker=True,
                    level="custom/old_house", distance_scale=game_units_to_meters, steps_repeat=4)
     return ScaledFloatFrame(env)
 
@@ -30,7 +31,8 @@ class SingleImageWrapper(gym.ObservationWrapper):
         super().__init__(env)
         template = env.observation_space[0].spaces[0]
         shape = (6,) + template.shape[1:]
-        self.observation_space = gym.spaces.Box(template.low.min(), template.high.max(), shape, template.dtype)
+        self.observation_space = gym.spaces.Box(
+            template.low.min(), template.high.max(), shape, template.dtype)
 
     def observation(self, observation):
         observations, last_reward_action = observation
@@ -46,19 +48,24 @@ def create_multiscene(num_processes, wrap=lambda e: e, seed=None, use_dummy=Fals
     for i in range(num_processes):
         def func():
             import environment
-            env = wrap(gym.make(**kwargs))
-            env.seed((seed * i * 231893) % 15487469)  # pseudo-independent random sequences
+            env = wrap(gym.make(
+                **kwargs,
+                disable_env_checker=True,
+            ))
+            # pseudo-independent random sequences
+            env.seed((seed * i * 231893) % 15487469)
             return env
         funcs.append(func)
 
     if use_dummy:
-        return SyncVectorEnv(funcs)
+        return DummyVecEnv(funcs)
 
     else:
-        return AsyncVectorEnv(funcs)
+        return SubprocVecEnv(funcs)
 
 
-gym.register("TurtleLab-v0", entry_point=_createImageEnvironment, kwargs=dict(dataset_name='turtle_room'))
+gym.register("TurtleLab-v0", entry_point=_createImageEnvironment,
+             kwargs=dict(dataset_name='turtle_room'))
 gym.register(
     id='DMHouseCustom-v1',
     entry_point=_createDmhouseEnvironment,

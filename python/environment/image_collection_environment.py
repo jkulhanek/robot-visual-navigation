@@ -3,7 +3,9 @@ import h5py
 import gym
 from gym.wrappers import TimeLimit
 import numpy as np
+import math
 import random
+from itertools import chain
 
 ACTION_LIST = []
 
@@ -29,10 +31,12 @@ def compute_complexity_distance(pointa, pointb):
 class ImageEnvironmentWrapper(gym.ObservationWrapper):
     def __init__(self, env):
         super(ImageEnvironmentWrapper, self).__init__(env)
-        self._stds = [51.764749543249216, 51.764749543249216, 1064.4242973195394, 1064.4242973195394]
-        self._means = [172.50841217557178, 172.50841217557178, 980.5952, 980.5952]
-        self.observation_space = gym.spaces.Tuple(
-            tuple([gym.spaces.Box(-1.0, 1.0, x.shape, dtype=np.float32) for x in self.observation_space.spaces]))
+        self._stds = [51.764749543249216, 51.764749543249216,
+                      1064.4242973195394, 1064.4242973195394]
+        self._means = [172.50841217557178,
+                       172.50841217557178, 980.5952, 980.5952]
+        self.observation_space = gym.spaces.Tuple(tuple(
+            [gym.spaces.Box(-1.0, 1.0, x.shape, dtype=np.float32) for x in self.observation_space.spaces]))
 
     def observation(self, observation):
         return [(o.astype(np.float32) - m) / s for o, m, s in zip(list(observation), self._means, self._stds)]
@@ -45,6 +49,7 @@ class ImageEnvironment(gym.Env):
         super(ImageEnvironment, self).__init__(**kwargs)
         if path is None:
             path = os.path.expanduser(f'~/.cache/robot-visual-navigation/datasets/{dataset_name}_compiled.hdf5')
+
         self.path = path
         self.has_end_action = has_end_action
         self._file = None
@@ -73,15 +78,18 @@ class ImageEnvironment(gym.Env):
             self._file = h5py.File(self.path, 'r')
         self._positions = self._file["grid"]
         self._physicalPositions = self._file["positions"]
-        self._images = self._file[self._datasetSelector + ("/augmented_images" if self.augment_images else "/images")]
-        self._depths = self._file[self._datasetSelector + ("/augmented_depths" if self.augment_images else "/depths")]
+        self._images = self._file[self._datasetSelector +
+                                  ("/augmented_images" if self.augment_images else "/images")]
+        self._depths = self._file[self._datasetSelector +
+                                  ("/augmented_depths" if self.augment_images else "/depths")]
         wid, hei, _, nsamples = self._positions.shape
         self._allowedPoints = set()
         self._goalPoints = []
         self._nongoalPoints = []
         for x in range(wid):
             for y in range(hei):
-                isany = all(any(self._positions[x, y, r, i] != -1 for i in range(nsamples)) for r in range(4))
+                isany = all(
+                    any(self._positions[x, y, r, i] != -1 for i in range(nsamples)) for r in range(4))
                 if isany:
                     self._allowedPoints.add((x, y))
 
@@ -127,7 +135,8 @@ class ImageEnvironment(gym.Env):
                 reward = (-0.01 if collided else 0)
                 terminal = False
         obs = None if terminal else self._observe()
-        self._last_observation = obs if obs is not None else tuple([np.copy(x) for x in list(self._last_observation)])
+        self._last_observation = obs if obs is not None else tuple(
+            [np.copy(x) for x in list(self._last_observation)])
         return self._last_observation, reward, terminal, dict()
 
     def _ensure_in_grid(self, position):
@@ -163,8 +172,10 @@ class ImageEnvironment(gym.Env):
 
     def _observe(self):
         x, y, r = self._position
-        index = self._positions[x, y, r, self._random.randrange((self._positions[x, y, r] != -1).sum())]
-        self._physicalPosition = (self._physicalPositions[index], self._physicalPositions[self._goalIndex])
+        index = self._positions[x, y, r, self._random.randrange(
+            (self._positions[x, y, r] != -1).sum())]
+        self._physicalPosition = (
+            self._physicalPositions[index], self._physicalPositions[self._goalIndex])
         indexg = self._goalIndex
         if self.augment_images:
             irender = self._random.randrange(self._images.shape[1])
@@ -193,12 +204,15 @@ class ImageEnvironment(gym.Env):
     def reset(self):
         self._initialize()
         # Sample goal
-        self._goal = self.sample_goal() if self._next_task is None else self._next_task[1]
+        self._goal = self.sample_goal(
+        ) if self._next_task is None else self._next_task[1]
         xg, yg, rg = self._goal
-        self._goalIndex = self._positions[xg, yg, rg, self._random.randrange((self._positions[xg, yg, rg] != -1).sum())]
+        self._goalIndex = self._positions[xg, yg, rg, self._random.randrange(
+            (self._positions[xg, yg, rg] != -1).sum())]
         if self.augment_images:
             self._goalRender = self._random.randrange(self._images.shape[1])
-        self._position = self.sample_position(self._goal) if self._next_task is None else self._next_task[0]
+        self._position = self.sample_position(
+            self._goal) if self._next_task is None else self._next_task[0]
         self._last_observation = self._observe()
         self._next_task = None
         return self._last_observation
@@ -219,7 +233,8 @@ class ImageEnvironment(gym.Env):
         return self._random.choice(choiceArray)
 
     def is_goal(self, position):
-        diff = abs(self._goal[0] - position[0]) + abs(self._goal[1] - position[1])
+        diff = abs(self._goal[0] - position[0]) + \
+            abs(self._goal[1] - position[1])
         return diff <= 1 and self._goal[2] == position[2]
 
     def seed(self, seed=None):
@@ -242,7 +257,8 @@ class ImageEnvironment(gym.Env):
         # elif mode is 'human':
         #   pop up a window and render
         else:
-            super(ImageEnvironment, self).render(mode=mode)  # just raise an exception
+            super(ImageEnvironment, self).render(
+                mode=mode)  # just raise an exception
 
 
 if __name__ == "__main__":

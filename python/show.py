@@ -1,3 +1,4 @@
+import argparse
 from deep_rl import make_agent
 import deep_rl
 import torch.multiprocessing as mp
@@ -15,7 +16,8 @@ if __name__ == '__main__':
     import trainer
     default_args = trainer.default_args
     agent = make_agent("dmhouse")
-    env = trainer.create_envs(1, dict(renderer="software", **default_args()['env_kwargs']))[0]
+    env = trainer.create_envs(
+        1, dict(renderer="software", **default_args()['env_kwargs']))[0]
 
     while True:
         obs = env.reset()
@@ -26,4 +28,3 @@ if __name__ == '__main__':
             obs, reward, done, _ = env.step(action)
             if reward != 0.0:
                 print("collected reward: %s" % reward)
-

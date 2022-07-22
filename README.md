@@ -66,5 +66,32 @@ Similarly for the real-world dataset:
 python evaluate_turtlebot.py turtlebot --num-episodes 100
 ```
 
+Alternatively, you can also use other agents as described in the `Training` section.
+
 ## Training
-Start the training by running `./train.py <trainer>`, where `trainer` is the experiment you want to run. Available experiments are in the `trainer.py` file.
+Start the training by running `./train.py <trainer>`, where `trainer` is the experiment you want to run. Available experiments are the following:
+- `dmhouse`: our method (A2CAT-VN) trained with the dmhouse simulator
+- `dmhouse-unreal`: UNREAL trained with the dmhouse simulator
+- `dmhouse-a2c`: PAAC trained with the dmhouse simulator
+- `turtlebot`: our method (A2CAT-VN) fine-tuned on the real-world dataset
+- `turtlebot-unreal`: UNREAL fine-tuned on the real-world dataset
+- `turtlebot-a2c`: PAAC fine-tuned on the real-world dataset
+- `turtlebot-noprior`: our method (A2CAT-VN) trained on the real-world dataset; the model is trained from scretch
+- `turtlebot-unreal-noprior`: UNREAL trained on the real-world dataset; the model is trained from scretch
+- `turtlebot-a2c-noprior`: PAAC trained on the real-world dataset; the model is trained from scretch
+
+
+## Citation
+Please use the following citation:
+```
+@article{kulhanek2021visual,
+  title={Visual navigation in real-world indoor environments using end-to-end deep reinforcement learning},
+  author={Kulh{\'a}nek, Jon{\'a}{\v{s}} and Derner, Erik and Babu{\v{s}}ka, Robert},
+  journal={IEEE Robotics and Automation Letters},
+  volume={6},
+  number={3},
+  pages={4345--4352},
+  year={2021},
+  publisher={IEEE}
+}
+```

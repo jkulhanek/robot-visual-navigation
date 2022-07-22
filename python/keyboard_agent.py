@@ -74,7 +74,8 @@ class GoalKeyboardAgent:
 
 if __name__ == '__main__':
     argparse.ArgumentParser(description="")
-    parser = argparse.ArgumentParser(description='Deep reactive agent scene explorer.')
+    parser = argparse.ArgumentParser(
+        description='Deep reactive agent scene explorer.')
     args = vars(parser.parse_args())
 
     env = gym.make('DeepmindLabCustomHouse-v0', screen_size=(500, 500))
