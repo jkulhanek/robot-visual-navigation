@@ -21,6 +21,7 @@ def _createDmhouseEnvironment(**kwargs):
     # leading to (slightly) different results
     game_units_to_meters = 1 / 57.144
     env = gym.make('DMHouse-v1', **kwargs, renderer='software',
+                   disable_env_checker=True,
                    level="custom/old_house", distance_scale=game_units_to_meters, steps_repeat=4)
     return ScaledFloatFrame(env)
 
@@ -47,7 +48,10 @@ def create_multiscene(num_processes, wrap=lambda e: e, seed=None, use_dummy=Fals
     for i in range(num_processes):
         def func():
             import environment
-            env = wrap(gym.make(**kwargs))
+            env = wrap(gym.make(
+                **kwargs,
+                disable_env_checker=True,
+            ))
             # pseudo-independent random sequences
             env.seed((seed * i * 231893) % 15487469)
             return env
@@ -58,7 +62,6 @@ def create_multiscene(num_processes, wrap=lambda e: e, seed=None, use_dummy=Fals
 
     else:
         return SubprocVecEnv(funcs)
-
 
 
 gym.register("TurtleLab-v0", entry_point=_createImageEnvironment,
