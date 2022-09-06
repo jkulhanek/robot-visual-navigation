@@ -52,4 +52,4 @@ def create_agent(name):
     import trainer
 
     agent = make_agent(name)
-    return wrap_agent_observation(agent, name == "turtlebot-end" or name == "turtlebot-end-cont")
+    return wrap_agent_observation(agent, True)
