@@ -80,6 +80,9 @@ Start the training by running `./train.py <trainer>`, where `trainer` is the exp
 - `turtlebot-unreal-noprior`: UNREAL trained on the real-world dataset; the model is trained from scretch
 - `turtlebot-a2c-noprior`: PAAC trained on the real-world dataset; the model is trained from scretch
 
+## Model checkpoints
+All model checkpoints are available online:<br>
+[https://data.ciirc.cvut.cz/public/projects/2021RealWorldNavigation/checkpoints](https://data.ciirc.cvut.cz/public/projects/2021RealWorldNavigation/checkpoints)
 
 ## Citation
 Please use the following citation:
