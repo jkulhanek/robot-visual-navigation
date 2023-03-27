@@ -58,5 +58,4 @@ class BatchExperienceReplay(BatchSequenceStorage):
         if sampler1_batch is None or sampler2_batch is None:
             return None
 
-        return
-        (sampler1_batch, sampler2_batch)
+        return (sampler1_batch, sampler2_batch)
